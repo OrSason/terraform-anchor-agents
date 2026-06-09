@@ -1,0 +1,36 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: anchor-agent-operator
+  namespace: anchor-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: anchor-agent-operator
+rules:
+  - apiGroups: ["anchor.io"]
+    resources: ["anchoragents"]
+    verbs: ["get", "list", "watch", "update", "patch"]
+  - apiGroups: ["anchor.io"]
+    resources: ["anchoragents/status"]
+    verbs: ["get", "update", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+  - apiGroups: [""]
+    resources: ["services", "configmaps"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: anchor-agent-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: anchor-agent-operator
+subjects:
+  - kind: ServiceAccount
+    name: anchor-agent-operator
+    namespace: anchor-system

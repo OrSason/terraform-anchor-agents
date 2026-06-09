@@ -1,0 +1,14 @@
+# Terraform provider cache + plan/state — never commit these.
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfplan
+
+# Real variable values (may contain secrets). The .example is committed.
+terraform.tfvars
+*.auto.tfvars
+
+# Keep the dependency lock file committed:
+!.terraform.lock.hcl

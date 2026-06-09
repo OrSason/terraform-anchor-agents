@@ -1,0 +1,101 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: anchoragents.anchor.io
+spec:
+  group: anchor.io
+  scope: Namespaced
+  names:
+    kind: AnchorAgent
+    listKind: AnchorAgentList
+    plural: anchoragents
+    singular: anchoragent
+    shortNames:
+      - aagent
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - name: Phase
+          type: string
+          jsonPath: .status.phase
+        - name: Endpoint
+          type: string
+          jsonPath: .spec.anchorBaseUrl
+        - name: LastHeartbeat
+          type: string
+          jsonPath: .status.lastHeartbeat
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [anchorBaseUrl, credentialSecretRef, image]
+              properties:
+                agentName:
+                  type: string
+                  description: Human-readable agent name (informational).
+                anchorBaseUrl:
+                  type: string
+                  description: Anchor API base URL including /api/v1.
+                image:
+                  type: string
+                  description: Anchor Agent Gateway container image.
+                replicas:
+                  type: integer
+                  minimum: 0
+                  default: 1
+                agentVersion:
+                  type: string
+                  default: "0.1.0"
+                credentialSecretRef:
+                  type: object
+                  required: [name]
+                  properties:
+                    name:
+                      type: string
+                    key:
+                      type: string
+                      default: apiKey
+                cacheTtlMs:
+                  type: integer
+                  default: 30000
+                heartbeatIntervalMs:
+                  type: integer
+                  default: 60000
+                logLevel:
+                  type: string
+                  default: info
+                mcpEnabled:
+                  type: boolean
+                  default: false
+                allowedProjectIds:
+                  type: array
+                  items:
+                    type: string
+                allowedEnvironmentIds:
+                  type: array
+                  items:
+                    type: string
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                  description: Pending | Reconciling | Ready | Error
+                message:
+                  type: string
+                lastHeartbeat:
+                  type: string
+                observedReplicas:
+                  type: integer
+                observedGeneration:
+                  type: integer

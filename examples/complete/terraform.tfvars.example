@@ -1,0 +1,54 @@
+# Copy to terraform.tfvars and fill in. Secrets are better supplied via
+# TF_VAR_* env vars or a secrets manager than committed here.
+
+aws_region  = "il-central-1"
+environment = "prod"
+
+# Anchor control plane (no /api/v1 suffix).
+anchor_url = "https://anchor.example.com"
+
+# Registration: either supply a JWT directly...
+# anchor_admin_token = "eyJ..."
+# ...or let the module log in:
+anchor_admin_email    = "admin@anchor.local"
+anchor_admin_password = "change-me" # prefer TF_VAR_anchor_admin_password
+
+# Cluster access.
+kubeconfig_path = "~/.kube/config"
+kube_context    = "" # empty = current-context
+
+# External Secrets Operator must already be installed in the cluster, with a
+# (Cluster)SecretStore wired to AWS Secrets Manager.
+external_secrets = {
+  secret_store_name = "aws-secretsmanager"
+  secret_store_kind = "ClusterSecretStore"
+  refresh_interval  = "1h"
+}
+
+# Optional: private gateway image pull secret (must pre-exist in the agents ns).
+# image_pull_secret = "ghcr-pull"
+
+agents = {
+  release-bot = {
+    description            = "CI release bot — reads prod config + variables."
+    allowed_resource_types = ["configuration", "variable"]
+    allow_secret_values    = false
+    expires_in_days        = 90
+    mcp_enabled            = false
+    scopes = [
+      # Whole project (environment_id omitted) ...
+      { project_id = "11111111-1111-1111-1111-111111111111" },
+      # ... or a single environment within a project:
+      # { project_id = "1111...", environment_id = "2222..." },
+    ]
+  }
+
+  drift-watcher = {
+    description            = "Monitors drift across the platform project's staging env."
+    allowed_resource_types = ["configuration", "variable", "drift"]
+    allow_secret_values    = false
+    scopes = [
+      { project_id = "33333333-3333-3333-3333-333333333333", environment_id = "44444444-4444-4444-4444-444444444444" },
+    ]
+  }
+}
