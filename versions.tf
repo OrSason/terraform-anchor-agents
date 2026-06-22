@@ -26,7 +26,7 @@ terraform {
     # its one-time API key. Configured by the caller (see examples/complete).
     restapi = {
       source  = "Mastercard/restapi"
-      version = "~> 2.0"
+      version = "~> 3.0"
     }
   }
 }
