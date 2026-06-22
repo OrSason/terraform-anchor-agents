@@ -5,7 +5,7 @@ terraform {
     # Core typed k8s objects: namespaces, ServiceAccounts, RBAC, the operator Deployment.
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.30"
+      version = "~> 3.2"
     }
 
     # Server-side apply of CRDs and Custom Resources (AnchorAgent, ExternalSecret).
