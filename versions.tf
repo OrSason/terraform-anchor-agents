@@ -19,7 +19,7 @@ terraform {
     # AWS Secrets Manager: where each agent's API key is stored at rest.
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.0"
+      version = "~> 6.51"
     }
 
     # Calls Anchor's management API to register each service agent and capture
