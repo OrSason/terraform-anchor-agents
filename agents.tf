@@ -34,7 +34,7 @@ resource "restapi_object" "agent" {
 # 2) Store each agent's API key in AWS Secrets Manager as { "apiKey": "<key>" }.
 # ---------------------------------------------------------------------------
 resource "aws_secretsmanager_secret" "agent" {
-  for_each = var.agents
+  for_each = var.create_secrets ? var.agents : {}
 
   name        = local.agent_aws_keys[each.key]
   description = "Anchor service-agent API key for '${each.key}' (${var.environment})."
@@ -47,7 +47,7 @@ resource "aws_secretsmanager_secret" "agent" {
 }
 
 resource "aws_secretsmanager_secret_version" "agent" {
-  for_each = var.agents
+  for_each = var.create_secrets ? var.agents : {}
 
   secret_id     = aws_secretsmanager_secret.agent[each.key].id
   secret_string = jsonencode({ apiKey = local.agent_keys[each.key] })
