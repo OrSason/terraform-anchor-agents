@@ -138,6 +138,19 @@ variable "aws_secret_name_prefix" {
   default     = ""
 }
 
+variable "create_secrets" {
+  description = <<-EOT
+    Whether this module creates+manages each agent's AWS Secrets Manager secret
+    (and its version). Set false to "bring your own" secret created out of band
+    — e.g. a cross-region primary/replica secret that this module's single-region
+    aws provider cannot manage (tagging a replica is rejected by AWS). When false,
+    the secret must already exist at <prefix>/<agent>; the ExternalSecret/AnchorAgent
+    still reference it by name, so credential delivery is unaffected.
+  EOT
+  type        = bool
+  default     = true
+}
+
 # ---------------------------------------------------------------------------
 # The agents
 # ---------------------------------------------------------------------------
