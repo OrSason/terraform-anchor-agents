@@ -1,3 +1,8 @@
+output "module_version" {
+  description = "SemVer of this terraform-anchor-agents module (from the VERSION file, kept in lockstep with the git tag it was released from)."
+  value       = local.module_version
+}
+
 output "agent_ids" {
   description = "Anchor service-agent UUIDs, keyed by agent name (only when registered by this module)."
   value       = { for name, r in restapi_object.agent : name => r.id }
