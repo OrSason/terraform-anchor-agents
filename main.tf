@@ -1,4 +1,9 @@
 locals {
+  # This module's released version, sourced from the VERSION file and kept in
+  # lockstep with the git tag (vX.Y.Z) it was cut from. Surfaced via the
+  # module_version output so consumers can trace which version they're running.
+  module_version = trimspace(file("${path.module}/VERSION"))
+
   # Gateway upstream endpoint.
   anchor_api_base_url = "${trimsuffix(var.anchor_url, "/")}/api/v1"
 
