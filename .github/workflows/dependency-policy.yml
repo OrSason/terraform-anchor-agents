@@ -1,0 +1,65 @@
+name: Dependency policy
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: dependency-policy-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  dependency-policy:
+    name: Dependency policy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Non-Dependabot pull request
+        if: github.event.pull_request.user.login != 'dependabot[bot]'
+        run: echo "Dependency auto-merge policy does not apply to this pull request."
+
+      - name: Read Dependabot metadata
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        id: metadata
+        uses: dependabot/fetch-metadata@d7267f607e9d3fb96fc2fbe83e0af444713e90b7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enforce patch-only auto-merge
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          UPDATE_TYPE: ${{ steps.metadata.outputs.update-type }}
+        run: |
+          if [ "$UPDATE_TYPE" != "version-update:semver-patch" ]; then
+            gh pr edit "$PR_URL" --add-label dependency-hold
+            echo "::error::Terraform provider auto-merge is patch-only; got $UPDATE_TYPE."
+            exit 1
+          fi
+
+      - name: Prevent CI workflow self-modification
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          files=$(gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files" --jq '.[].filename')
+          if grep -q '^\.github/workflows/' <<<"$files"; then
+            gh pr edit "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --add-label dependency-hold
+            echo "::error::Workflow dependency updates require a deliberate review and cannot auto-merge."
+            exit 1
+          fi
+
+      - name: Enable exact-head auto-merge
+        if: github.event.pull_request.user.login == 'dependabot[bot]'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+        run: |
+          gh pr edit "$PR_URL" --add-label dependency-automerge
+          gh pr edit "$PR_URL" --remove-label dependency-hold || true
+          gh pr merge --auto --squash "$PR_URL"
