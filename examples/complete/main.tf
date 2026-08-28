@@ -6,10 +6,10 @@ terraform {
   required_version = ">= 1.5.0"
 
   required_providers {
-    kubernetes = { source = "hashicorp/kubernetes", version = "~> 2.30" }
+    kubernetes = { source = "hashicorp/kubernetes", version = "~> 3.2" }
     kubectl    = { source = "gavinbunney/kubectl", version = "~> 1.14" }
-    aws        = { source = "hashicorp/aws", version = "~> 5.0" }
-    restapi    = { source = "Mastercard/restapi", version = "~> 2.0" }
+    aws        = { source = "hashicorp/aws", version = "~> 6.51" }
+    restapi    = { source = "Mastercard/restapi", version = "~> 3.0" }
     http       = { source = "hashicorp/http", version = "~> 3.4" }
   }
 }
